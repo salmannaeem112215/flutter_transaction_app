@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_application_2/widgets/transaction_item.dart';
 import '../models/transaction.dart';
 import 'package:intl/intl.dart';
 
@@ -34,46 +35,15 @@ class TransactionList extends StatelessWidget {
               ],
             );
           }))
-        : ListView.builder(
-            itemBuilder: (ctx, index) {
-              return Card(
-                elevation: 5,
-                child: ListTile(
-                  contentPadding: EdgeInsets.all(10),
-                  leading: Container(
-                    width: 75,
-                    height: 50,
-                    decoration: BoxDecoration(
-                        border: Border.all(
-                          color: Theme.of(context).primaryColor,
-                        ),
-                        borderRadius: BorderRadius.circular(50),
-                        color: Theme.of(context).primaryColor),
-                    child: Padding(
-                      padding: const EdgeInsets.all(8.0),
-                      child: FittedBox(
-                          child:
-                              Text(ruppesFormat(transactions[index].amount))),
-                    ),
-                  ),
-                  title: Text(
-                    transactions[index].title,
-                    style: Theme.of(context).textTheme.headline5,
-                  ),
-                  subtitle: Text(
-                    DateFormat.yMMMd().format(transactions[index].date),
-                  ),
-                  trailing: IconButton(
-                      onPressed: () =>
-                          deleteTransaction(transactions[index].id),
-                      icon: Icon(
-                        Icons.delete,
-                        color: Theme.of(context).errorColor,
-                      )),
-                ),
-              );
-            },
-            itemCount: transactions.length,
+        : ListView(
+            children: transactions
+                .map((tx) => TransactionItem(
+                      key: ValueKey(tx.id),
+                      transaction: tx,
+                      deleteTx: deleteTransaction,
+                      ruppesFormat: ruppesFormat,
+                    ))
+                .toList(),
           );
   }
 }

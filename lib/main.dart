@@ -60,7 +60,7 @@ class MyHomePage extends StatefulWidget {
   _MyHomePageState createState() => _MyHomePageState();
 }
 
-class _MyHomePageState extends State<MyHomePage> {
+class _MyHomePageState extends State<MyHomePage> with WidgetsBindingObserver {
   final List<Transaction> _transactions = [
     // Transaction(
     //   title: 'New Shoes',
@@ -155,6 +155,27 @@ class _MyHomePageState extends State<MyHomePage> {
   }
 
   bool _showChart = false;
+  //AppLifeCycle listner adding
+  @override
+  void initState() {
+    WidgetsBinding.instance.addObserver(this);
+    super.initState();
+  }
+
+  // due to appLifeCycle listner is added when ever the state change it will be called
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    print(state);
+    super.didChangeAppLifecycleState(state);
+  }
+
+  //AppLifeCycle listner removing
+  @override
+  void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
+    super.dispose();
+  }
+
   void _addTransaction(String txTitle, double txAmount, DateTime selectedDate) {
     setState(() {
       _transactions.add(Transaction(
