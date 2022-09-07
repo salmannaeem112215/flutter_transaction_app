@@ -23,53 +23,39 @@ class MyApp extends StatelessWidget {
       title: 'Flutter App',
       home: MyHomePage(),
       theme: ThemeData(
-          primarySwatch: Colors.purple,
-          // errorColor: Colors.red,
-          fontFamily: 'Quicksand',
+        textTheme: ThemeData.light().textTheme.copyWith(
+            headline6: TextStyle(
+              fontFamily: 'OpenSans',
+              fontWeight: FontWeight.bold,
+              fontSize: 20,
+            ),
+            headline5: TextStyle(
+              fontFamily: 'QuickSand',
+              fontWeight: FontWeight.bold,
+              fontSize: 18,
+            ),
+            button: TextStyle(
+              fontFamily: 'QuickSand',
+              fontWeight: FontWeight.bold,
+              fontSize: 20,
+            )),
+        fontFamily: 'Quicksand',
+        primarySwatch: Colors.blueGrey,
+        appBarTheme: AppBarTheme(
           textTheme: ThemeData.light().textTheme.copyWith(
                 titleLarge: TextStyle(
                   fontFamily: 'OpenSans',
+                  fontSize: 20,
                   fontWeight: FontWeight.bold,
-                  fontSize: 18,
                 ),
-                button: TextStyle(color: Colors.white),
               ),
-          appBarTheme: AppBarTheme(
-            textTheme: ThemeData.light().textTheme.copyWith(
-                  titleLarge: TextStyle(
-                    fontFamily: 'OpenSans',
-                    fontSize: 20,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-          )),
-      // theme: ThemeData(
-      //   textTheme: ThemeData.light().textTheme.copyWith(
-      //       headline6: TextStyle(
-      //         fontFamily: 'OpenSans',
-      //         fontWeight: FontWeight.bold,
-      //         fontSize: 20,
-      //       ),
-      //       headline5: TextStyle(
-      //         fontFamily: 'QuickSand',
-      //         fontWeight: FontWeight.bold,
-      //         fontSize: 18,
-      //       ),
-      //       button: TextStyle(
-      //         fontFamily: 'QuickSand',
-      //         fontWeight: FontWeight.bold,
-      //         fontSize: 20,
-      //       )),
-      //   fontFamily: 'Quicksand',
-      //   primarySwatch: Colors.blueGrey,
-      // ),
+        ),
+      ),
     );
   }
 }
 
 class MyHomePage extends StatefulWidget {
-  // String titleInput;
-  // String amountInput;
   @override
   _MyHomePageState createState() => _MyHomePageState();
 }
@@ -168,6 +154,7 @@ class _MyHomePageState extends State<MyHomePage> {
     }).toList();
   }
 
+  bool _showChart = false;
   void _addTransaction(String txTitle, double txAmount, DateTime selectedDate) {
     setState(() {
       _transactions.add(Transaction(
@@ -225,9 +212,51 @@ class _MyHomePageState extends State<MyHomePage> {
     return 'RS ' + temp;
   }
 
+  List<Widget> _buildLandscapeContent(
+      MediaQueryData mediaQuery, AppBar appBar, Widget txWidgetList) {
+    return [
+      Row(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: <Widget>[
+          Text('Show Chart'),
+          Switch(
+              value: _showChart,
+              onChanged: (val) {
+                print(val);
+                setState(() {
+                  _showChart = val;
+                });
+              }),
+        ],
+      ),
+      _showChart
+          ? Container(
+              height: (mediaQuery.size.height -
+                      appBar.preferredSize.height -
+                      mediaQuery.padding.top) *
+                  0.7,
+              child: Chart(_recentTransactions, _ruppesFormat),
+            )
+          : txWidgetList,
+    ];
+  }
+
+  List<Widget> _buildPortraitContent(
+      MediaQueryData mediaQuery, AppBar appBar, Widget txWidgetList) {
+    return [
+      Container(
+        height: (mediaQuery.size.height -
+                appBar.preferredSize.height -
+                MediaQuery.of(context).padding.top) *
+            0.3,
+        child: Chart(_recentTransactions, _ruppesFormat),
+      ),
+      txWidgetList
+    ];
+  }
+
   @override
   Widget build(BuildContext context) {
-    var _showChart = false;
     final appBar = AppBar(
       title: Text('Flutter'),
       // backgroundColor: Colors.red[400],
@@ -241,10 +270,10 @@ class _MyHomePageState extends State<MyHomePage> {
         )
       ],
     );
-    final isLandscape =
-        MediaQuery.of(context).orientation == Orientation.landscape;
+    final mediaQuery = MediaQuery.of(context);
+    final isLandscape = mediaQuery.orientation == Orientation.landscape;
     final _txList = Container(
-      height: (MediaQuery.of(context).size.height -
+      height: (mediaQuery.size.height -
               appBar.preferredSize.height -
               MediaQuery.of(context).padding.top) *
           0.7,
@@ -269,39 +298,9 @@ class _MyHomePageState extends State<MyHomePage> {
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
             if (isLandscape)
-              Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: <Widget>[
-                  Text('Show Chart'),
-                  Switch(
-                      value: _showChart,
-                      onChanged: (val) {
-                        print(val);
-                        setState(() {
-                          _showChart = val;
-                        });
-                      }),
-                ],
-              ),
-            if (isLandscape)
-              _showChart
-                  ? Container(
-                      height: (MediaQuery.of(context).size.height -
-                              appBar.preferredSize.height -
-                              MediaQuery.of(context).padding.top) *
-                          0.7,
-                      child: Chart(_recentTransactions, _ruppesFormat),
-                    )
-                  : _txList,
+              ..._buildLandscapeContent(mediaQuery, appBar, _txList),
             if (!isLandscape)
-              Container(
-                height: (MediaQuery.of(context).size.height -
-                        appBar.preferredSize.height -
-                        MediaQuery.of(context).padding.top) *
-                    0.3,
-                child: Chart(_recentTransactions, _ruppesFormat),
-              ),
-            if (!isLandscape) _txList,
+              ..._buildPortraitContent(mediaQuery, appBar, _txList),
           ],
         ),
       ),
